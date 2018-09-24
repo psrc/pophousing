@@ -11,14 +11,16 @@ Set up the project repository in J:\\Projects\\Population\\OFMPopHsgData\\OFMSAE
 ### GIS
 
 If area of interest is a full regional coverage:  
-    1. Spatial join the parcels feacture class with census blocks. 
-    2. Spatial join the resulting parcel feature class in 1 with the AOI.
+
+1. Spatial join the parcels feacture class with census blocks. 
+2. Spatial join the resulting parcel feature class in 1 with the AOI.
 
 If area of interest does not have regional coverage (e.g. regional growth centers, park buffers, etc.):  
-    1. Complete steps 1 and 2
-    2. Select all census block features that intersect the AOI and export the attribute table as a .dbf to the 'r_temp' directory.
-    3. Add new binary column (0 or 1) in resulting parcel feature class called 'Filter'. All parcels that lie within the blocks that intersect the area of interest will be assigned '1'.
-    4. Export parcel feature class as a shapefile
+
+1. Complete steps 1 and 2
+2. Select all census block features that intersect the AOI and export the attribute table as a .dbf to the 'r_temp' directory.
+3. Add new binary column (0 or 1) in resulting parcel feature class called 'Filter'. All parcels that lie within the blocks that intersect the area of interest will be assigned '1'.
+4. Export parcel feature class as a shapefile
     
 ### Create RDS
 
