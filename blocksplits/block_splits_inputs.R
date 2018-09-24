@@ -1,30 +1,17 @@
-library(tidyverse)
-library(foreign)
-
-
-# User inputs -------------------------------------------------------------
-
-
-bnd.year <- "2017"
-data.year <- c("2000")
-root.dir <- "J:/Projects/Population/OFMPopHsgData/OFMSAEP/Custom_Ests/HHPop_est_Block_Spilt"
-input.dir <- file.path(root.dir, bnd.year, "r_input")
-temp.dir <- file.path(root.dir, bnd.year, paste0("est", data.year),"r_temp")
-raw.ofm.dir <- "J:/OtherData/OFM/SAEP/SAEP Extract_2017_10October03/"
-
-# select geog code: standard = 1, annex = 2, uga change = 3, rural-city annex = 4, centers = 5
-geog <- 1
-
 # variables
-vars <- switch(geog,
-               c("COUNTY" = "CNTYNAME", "SecField" = "JURIS_1"),
-               c("COUNTY" = "ANXCNTY", "SecField" = "ANXCITY"),
-               c("COUNTY" = "UGACNTY", "SecField" = "add_remove"),
-               c("COUNTY" = "UGACNTY", "SecField" = "CITYNAME", "SecField2" = "add_remove"))
+if (geog == 4) {
+  vars <- c("COUNTY" = col.county.name, "SecField" = col.secondary.field, "SecField2" = "add_remove")
+} else {
+  vars <- c("COUNTY" = col.county.name, "SecField" = col.secondary.field)
+}
 
-# prefixes
-prefix <- switch(geog, NULL, "uga", "anx", "rc", "ctr")
-
+# vars <- switch(geog,
+#                c("COUNTY" = "CNTYNAME", "SecField" = "TOD_Area3"),#"JURIS_1" #TOD #JURIS
+#                c("COUNTY" = "ANXCNTY", "SecField" = "ANXCITY"),
+#                c("COUNTY" = "UGACNTY", "SecField" = "add_remove"),
+#                c("COUNTY" = "UGACNTY", "SecField" = "CITYNAME", "SecField2" = "add_remove"),
+#                c("COUNTY" = "CNTYNAME", "SecField" = "symbol")) #COUNTY #centers #TOD2 #Subarea #TOD_Area5
+# 
 
 # Read data ---------------------------------------------------------------
 
@@ -32,17 +19,8 @@ prefix <- switch(geog, NULL, "uga", "anx", "rc", "ctr")
 ofm <- readRDS(file.path(raw.ofm.dir,"ofm_saep.rds"))
 bldg <- readRDS(file.path(input.dir,"bldg.rds"))
 
-parcel <- switch(geog, 
-                 readRDS(file.path(input.dir,"parcel.rds")),
-                 readRDS(file.path(input.dir,"parcel_annex.rds")),
-                 readRDS(file.path(input.dir,"parcel_uga.rds")),
-                 readRDS(file.path(input.dir,"parcel_rc.rds")))
-
-blocks <- switch(geog,
-                 NULL, 
-                 read.dbf(file.path(temp.dir, "anxblks.dbf")), # 2014-17 Annexations
-                 read.dbf(file.path(temp.dir, "uga1417blks.dbf")), # 2014-17 change
-                 read.dbf(file.path(temp.dir, "rc1417blks.dbf"))) # 2014-17 Annexations rural-to-city
+parcel <- readRDS(file.path(input.dir, parcel.file.nm))
+blocks <- read.dbf(file.path(temp.dir, blocks.file.nm))
 
 
 # Arguments ---------------------------------------------------------------
@@ -102,44 +80,3 @@ if (geog == 4) {
 } else {
   fill.grp.var <- fill.grp.var[1:2]
 }
-
-
-# Create RDS (do only once)------------------------------------------------
-
-# columns = c("STATEFP10",  "COUNTYFP10", "TRACTCE10", "BLOCKCE10", "GEOID10")
-
-# raw.ofm.fn <- "ofm_saep.csv"
-# raw.ofm <- read.csv(file.path(raw.ofm.dir, raw.ofm.fn), header = TRUE, colClasses = lapply(columns, function(x) x = "character"))
-# raw.ofm[,28:ncol(raw.ofm)] <- lapply(raw.ofm[,28:ncol(raw.ofm)], as.numeric)
-# saveRDS(raw.ofm,  file.path(raw.ofm.dir,"ofm_saep.rds"))
-# rm(raw.ofm)
-
-# raw.prcl <- file.path(root.dir, bnd.year, "GIS")
-# raw.prcl.fn <- "Parcels_wCityBlk.dbf"
-# parcel <- read.dbf(file.path(raw.prcl, raw.prcl.fn))
-# saveRDS(parcel, file.path(input.dir, "parcel.rds"))
-# rm(parcel)
-
-# raw.bldg <- file.path(root.dir, bnd.year)
-# raw.bldg.fn <- "buildings14.csv"
-# building <- read.csv(file.path(raw.bldg, raw.bldg.fn))
-# saveRDS(building, file.path(input.dir, "bldg.rds"))
-# rm(building)
-
-# raw.prcl <- file.path(root.dir, bnd.year, "GIS")
-# raw.prcl.fn <- "Parcels_wAnnxBlk.dbf"
-# parcel_annex <- read.dbf(file.path(raw.prcl, raw.prcl.fn))
-# saveRDS(parcel_annex, file.path(input.dir, "parcel_annex.rds"))
-# rm(parcel_annex)
-
-# raw.prcl <- file.path(root.dir, bnd.year, "GIS")
-# raw.prcl.fn <- "Parcels_wUGABlk.dbf"
-# parcel_uga <- read.dbf(file.path(raw.prcl, raw.prcl.fn))
-# saveRDS(parcel_uga, file.path(input.dir, "parcel_uga.rds"))
-# rm(parcel_uga)
-
-# raw.prcl <- file.path(root.dir, bnd.year, "GIS")
-# raw.prcl.fn <- "Parcels_wRuralCityBlk.dbf"
-# parcel_rc <- read.dbf(file.path(raw.prcl, raw.prcl.fn))
-# saveRDS(parcel_rc, file.path(input.dir, "parcel_rc.rds"))
-# rm(parcel_rc)
