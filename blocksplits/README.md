@@ -6,7 +6,7 @@ The final output will be a dataframe consisting of relevant blocks with housing 
 ## Home Directory
 Clone this blocksplits repository in a directory of your choice.
 
-Set up a project repository in J:\\Projects\\Population\\OFMPopHsgData\\OFMSAEP\\Custom_Ests\\HHPop_est_Block_Split and use the same directory structure as seen in previous projects. Each estimate year will have its own sub-directory.
+Set up a project repository in ``J:\Projects\Population\OFMPopHsgData\OFMSAEP\Custom_Ests\HHPop_est_Block_Split`` and use the same directory structure as seen in previous projects. Each estimate year will have its own sub-directory.
 
 ## Prepare Input Files  
 
@@ -34,13 +34,13 @@ Edit settings in settings.R
 
 ## Run
 
-Use block_splits_output.R to complete the block-splitting process. Do not hit 'Source' as this process involves several intermediate GIS steps. Run line by line or hightlight chunks to run.
+Edit the ``mydir`` path in block_splits_output.R. Run line by line or hightlight chunks to run. Do not hit 'Source' as this process involves several intermediate GIS steps. 
 
 Intermediate GIS steps will require spatial joining block centroids to determine whether or not they land in the AOI and where.
 
 ## Post-script QC
 
-After the final dataframe has been exported, check that the sum of the ratios by block for HHpop and GQpop equal 1. Rounding may cause some aggregations to sum to .99 or 1.01. 
+After the final dataframe has been exported, check that the sum of the ratios by block for HHpop and GQpop equal 1. Rounding during the process may cause some aggregations to sum to .99 or 1.01. 
 
 
 
