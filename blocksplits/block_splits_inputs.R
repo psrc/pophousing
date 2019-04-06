@@ -1,6 +1,9 @@
 # variables
 if (geog == 4) {
-  vars <- c("COUNTY" = col.county.name, "SecField" = col.secondary.field, "SecField2" = "add_remove")
+  # vars <- c("COUNTY" = col.county.name, "SecField" = col.secondary.field, "SecField2" = "add_remove")
+  vars <- c("COUNTY" = col.county.name, "SecField" = col.secondary.field, "SecField2" = "CityID")
+} else if (geog == 6) {
+  vars <- c("COUNTY" = col.county.name, "SecField" = col.secondary.field, "SecField2" = "CityID")
 } else {
   vars <- c("COUNTY" = col.county.name, "SecField" = col.secondary.field)
 }
@@ -20,7 +23,7 @@ ofm <- readRDS(file.path(raw.ofm.dir,"ofm_saep.rds"))
 bldg <- readRDS(file.path(input.dir,"bldg.rds"))
 
 parcel <- readRDS(file.path(input.dir, parcel.file.nm))
-blocks <- read.dbf(file.path(temp.dir, blocks.file.nm))
+# blocks <- read.dbf(file.path(temp.dir, blocks.file.nm))
 
 
 # Arguments ---------------------------------------------------------------
@@ -38,7 +41,7 @@ hhp.upd.vars <- c("COUNTY" = "ifelse((is.na(COUNTY) & !is.na(bSecField)), bCOUNT
                   "SecField2" = "ifelse((is.na(SecField2) & !is.na(bSecField2)), bSecField2, SecField2)",
                   "rxHHpop" = "ifelse(!is.na(bSecField), 1, rxHHpop)") 
 
-if (geog == 4) {
+if (geog == 4 | geog == 6) {
   NULL 
 } else {
   hhp.upd.vars <- hhp.upd.vars[c(1:2,4)]
@@ -46,10 +49,23 @@ if (geog == 4) {
 
 # HHP no existing development
 if (geog == 4) {
+  # default for rc annex
+  # hhp.upd.vars2 <- c("COUNTY" = "ifelse((is.na(COUNTY) & !is.na(bCOUNTY)), bCOUNTY, COUNTY)",
+  #                    "SecField" = "ifelse((is.na(SecField) & !is.na(bSecField)), bSecField, SecField)",
+  #                    "SecField2" = "ifelse((is.na(SecField2) & !is.na(bSecField2)), bSecField2, SecField2)",
+  #                    "rxHHpop" = "ifelse((!is.na(bCOUNTY) & bCOUNTY == COUNTY), 1, rxHHpop)")
+  
+  # county x hct x jurisdiction
   hhp.upd.vars2 <- c("COUNTY" = "ifelse((is.na(COUNTY) & !is.na(bCOUNTY)), bCOUNTY, COUNTY)",
                      "SecField" = "ifelse((is.na(SecField) & !is.na(bSecField)), bSecField, SecField)",
                      "SecField2" = "ifelse((is.na(SecField2) & !is.na(bSecField2)), bSecField2, SecField2)",
-                     "rxHHpop" = "ifelse((!is.na(bCOUNTY) & bCOUNTY == COUNTY), 1, rxHHpop)")
+                     "rxHHpop" = "ifelse((!is.na(bCOUNTY) & bCOUNTY == COUNTY & bSecField == SecField & bSecField2 == SecField2), 1, rxHHpop)")
+} else if (geog == 6) {
+  # county x hct x jurisdiction
+  hhp.upd.vars2 <- c("COUNTY" = "ifelse((is.na(COUNTY) & !is.na(bCOUNTY)), bCOUNTY, COUNTY)",
+                     "SecField" = "ifelse((is.na(SecField) & !is.na(bSecField)), bSecField, SecField)",
+                     "SecField2" = "ifelse((is.na(SecField2) & !is.na(bSecField2)), bSecField2, SecField2)",
+                     "rxHHpop" = "ifelse((!is.na(bCOUNTY) & bCOUNTY == COUNTY & bSecField == SecField & bSecField2 == SecField2), 1, rxHHpop)")
 } else {
   hhp.upd.vars2 <- c("rxHHpop" = "ifelse((!is.na(bSecField) & bSecField == SecField), 1, rxHHpop)")
 }
@@ -60,7 +76,7 @@ exdevjb.upd.var <- c("edunits" = "ifelse(is.na(edunits), 0, edunits)",
                      "bCOUNTY" = 'ifelse(is.na(COUNTY), "Not Available", COUNTY)',
                      "bSecField" = 'ifelse(is.na(SecField), "Not Available", SecField)',
                      "bSecField2" = 'ifelse(is.na(SecField2), "Not Available", SecField2)')
-if (geog == 4) {
+if (geog == 4 | geog == 6) {
   NULL
 } else if (geog == 1) {
   exdevjb.upd.var <- c(exdevjb.upd.var[1], "bCOUNTY" = "COUNTY", "bSecField" = "SecField")
@@ -73,7 +89,7 @@ fill.grp.var <- c("bCOUNTY" = 'ifelse(is.na(COUNTY), "Not Available", COUNTY)',
                   "bSecField" = 'ifelse(is.na(SecField), "Not Available", SecField)',
                   "bSecField2" = 'ifelse(is.na(SecField2), "Not Available", SecField2)')
 
-if (geog == 4) {
+if (geog == 4 | geog == 6) {
   NULL
 } else if (geog == 1) {
   fill.grp.var <- c("bCOUNTY" = "COUNTY", "bSecField" = "SecField")

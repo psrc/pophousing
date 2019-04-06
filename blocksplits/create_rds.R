@@ -5,17 +5,17 @@ source(file.path(mydir, "settings.R"))
 # create building and parcel rds ------------------------------------------
 
 
-raw.bldg <- file.path(root.dir, bnd.year)
-raw.bldg.fn <- "buildings14.csv"
-building <- read.csv(file.path(raw.bldg, raw.bldg.fn))
-saveRDS(building, file.path(input.dir, "bldg.rds"))
-rm(building)
+# raw.bldg <- file.path(root.dir, bnd.year)
+# raw.bldg.fn <- "buildings14.csv"
+# building <- read.csv(file.path(raw.bldg, raw.bldg.fn))
+# saveRDS(building, file.path(input.dir, "bldg.rds"))
+# rm(building)
 
 raw.prcl <- file.path(root.dir, bnd.year, "GIS")
-raw.prcl.fn <- "Parcels_wLocalParkQMBuffer.dbf"
-parcel_park <- read.dbf(file.path(raw.prcl, raw.prcl.fn))
-saveRDS(parcel_park, file.path(input.dir, "parcel_localparkqmbuff.rds"))
-rm(parcel_park)
+raw.prcl.fn <- "parcels_wjuris_buffer.dbf"
+parcels2rds <- read.dbf(file.path(raw.prcl, raw.prcl.fn))
+saveRDS(parcels2rds, file.path(input.dir, "parcels.rds"))
+rm(parcels2rds)
 
 
 # create ofm rds ----------------------------------------------------------

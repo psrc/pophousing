@@ -23,13 +23,15 @@ export.dbf <- function(table){
 # Filter and assemble data -------------------------------------------------------------
 
 
-ifelse(geog > 1, prcl <- parcel %>% filter(Filter == 1), prcl <- parcel)
+# ifelse(geog > 1, prcl <- parcel %>% filter(Filter == 1), prcl <- parcel)
+ifelse(geog %in% seq(2,5), prcl <- parcel %>% filter(Filter == 1), prcl <- parcel)
 prcl <- prcl %>%
   mutate_at(orig.vars, funs(as.character)) %>%
   rename_(.dots = vars)
 
 # filter ofm data
-if (geog > 1) {
+# if (geog > 1) {
+if (geog %in% seq(2,5)) {
   ofm.est <- ofm %>% 
     select(starts_with("COUNTY"), GEOID10, contains(data.year)) %>% 
     filter(GEOID10 %in% blocks$GEOID10) 
@@ -84,11 +86,17 @@ bloxnop <- read.dbf(file.path(temp.dir, "bloxnop.dbf"))
 # adjust field names from .dbf as necessary
 if (geog == 4) {
   bnop <- bloxnop %>%
-    select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = CITYNAME, bSecField2 = add_remove) %>%
+    # select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = CITYNAME, bSecField2 = add_remove) %>%
+    select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = code, bSecField2 = CityID) %>%
+    mutate_all(funs(as.character))
+} else if (geog == 6) {
+  bnop <- bloxnop %>%
+    # select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = CITYNAME, bSecField2 = add_remove) %>%
+    select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = code, bSecField2 = CityID) %>%
     mutate_all(funs(as.character))
 } else {
   bnop <- bloxnop %>%
-    select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = symbol) %>% 
+    select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = code) %>% 
     mutate_all(funs(as.character))
 }
 
@@ -116,21 +124,32 @@ bloxnoed.split <- read.dbf(file.path(temp.dir, "bloxnoed_split.dbf"))
 
 if (geog == 4) {
   bnoed.split <- bloxnoed.split %>%
-    select(GEOID10 = GEOID10, bCOUNTY = UGACNTY, bSecField = CITYNAME, bSecField2 = add_remove) %>%
+    # select(GEOID10 = GEOID10, bCOUNTY = UGACNTY, bSecField = CITYNAME, bSecField2 = add_remove) %>%
+    select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = code, bSecField2 = CityID) %>%
     mutate_all(funs(as.character))
 } else if (geog == 5) {
   bnoed.split <- bloxnoed.split %>%
-    select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = symbol) %>% 
+    select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = code) %>% 
     mutate_all(funs(as.character))
-
+} else if (geog ==6) {
+  bnoed.split <- bloxnoed.split %>%
+    # select(GEOID10 = GEOID10, bCOUNTY = UGACNTY, bSecField = CITYNAME, bSecField2 = add_remove) %>%
+    select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = code, bSecField2 = CityID) %>%
+    mutate_all(funs(as.character))
 } else {
   bnoed.split <- bloxnoed.split %>%
-    select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = TOD_Area3) %>% 
+    select(GEOID10 = GEOID10, bCOUNTY = CNTYNAME, bSecField = JURIS) %>% 
     mutate_all(funs(as.character))
 }
 
 # update rxHHpop
-if (geog == 5) {
+if (geog == 6) { # specifically for county x hct mode x jurisdiction 4/4/19
+  df <- df %>%
+    left_join(bnoed.split, by ="GEOID10") %>%
+    mutate_(.dots = hhp.upd.vars2) %>%
+    select_(.dots = paste0("-", b.vars))
+  
+} else if (geog == 5) {
   df <- df %>%
     left_join(bnoed.split, by ="GEOID10") %>%
     mutate(COUNTY = ifelse(is.na(COUNTY) & bCOUNTY == 'Not Available', bCOUNTY, COUNTY),
@@ -221,7 +240,8 @@ df <- df %>% left_join(gq.noprcl, by = "GEOID10") %>%
 
 # GQ blocks (split)
 gq.split <- df %>% inner_join(sb, by = "GEOID10") %>%
-  filter_(paste0(colnames(curr.exdevb)[grep("^GQ", colnames(curr.exdevb))], '>0'))
+  filter_(paste0(colnames(curr.exdevb)[grep("^GQ", colnames(curr.exdevb))], '>0')) %>%
+  mutate(gqyes = 0)
 export.dbf(gq.split)
 
 # gq.split2 <- gq.split %>% select(GEOID10, COUNTY) %>% distinct(GEOID10, COUNTY)
@@ -230,9 +250,19 @@ export.dbf(gq.split)
 # Stop (now do GIS work) --------------------------------------------------
 
 bloxgq.split <- read.dbf(file.path(temp.dir, "bloxgqs.dbf"))
-bgq.split <- bloxgq.split %>% 
-  filter(gqyes == 1) %>% 
-  select(GEOID10, bCOUNTY = bCOUNTY, bSecField = bSecField, gqyes)# 
+# bgq.split <- bloxgq.split %>% 
+#   filter(gqyes == 1) %>% 
+#   select(GEOID10, bCOUNTY = bCOUNTY, bSecField = bSecField, gqyes)#
+
+if (geog == 4 | geog == 6) {
+  bgq.split <- bloxgq.split %>%
+    filter(gqyes == 1) %>%
+    select(GEOID10 = GEOID10, bCOUNTY = bCOUNTY, bSecField = bSecField, bSecField2 = bSecField2, gqyes)
+} else {
+  bgq.split <- bloxgq.split %>%
+    filter(gqyes == 1) %>%
+    select(GEOID10, bCOUNTY = bCOUNTY, bSecField = bSecField, gqyes)
+}
 
 # update rxGQpop
 df <- df %>% left_join(bgq.split, by = c("GEOID10", b.vars)) %>%
@@ -279,7 +309,7 @@ check.rx2 <- df %>% semi_join(check.rx.na , by = "GEOID10")
 # Export ------------------------------------------------------------------
 
 df <- df %>% select(-COUNTY, -SecField)#select(GEOID10, CNTYNAME = bCOUNTY, JURIS = bSecField, contains(data.year))
-write.xlsx(df, file.path(temp.dir, "rxblksplit_xlsx.xlsx"))
+write.xlsx(df, file.path(temp.dir, "rxblksplit_prelim.xlsx"))
 # write.csv(df, file.path(temp.dir, "rxblksplit.csv"), row.names = FALSE)
 
 # quick-check, print cnty summary
